@@ -26,29 +26,36 @@ class Cms_model extends CI_Model
         }
     }
 
-    private function logVisit()
+    private function logVisit(): void
     {
         if (!$this->input->is_ajax_request() && !isset($_GET['is_json_ajax'])) {
-            $data = [
-                'date'      => date("Y-m-d"),
-                'ip'        => $this->input->ip_address(),
-                'timestamp' => time()
-            ];
+            $ip   = $this->input->ip_address();
+            $date = date("Y-m-d");
 
-            $this->db->table('visitor_log')->upsert($data);
+            $exists = $this->db->table('visitor_log')
+                ->select('id')
+                ->where('date', $date)
+                ->where('ip', $ip)
+                ->limit(1)
+                ->get()
+                ->getRow();
+
+            if (!$exists) {
+                $this->db->table('visitor_log')->insert([
+                    'date'      => $date,
+                    'ip'        => $ip,
+                    'timestamp' => time()
+                ]);
+            }
         }
     }
 
-    public function getSideboxes(string $type = 'side', string $page = '*')
+    public function getSideboxes(string $page = '*'): array
     {
         // Query: Prepare
         $query = $this->db->table('sideboxes')
                           ->select('*')
                           ->orderBy('order', 'ASC');
-
-        // Query: Filter (Type)
-        if($type && in_array($type, ['top', 'side', 'bottom']))
-            $query = $query->where('location', $type);
 
         // Query: Filter (Page)
         if($page && $page !== '*')
@@ -86,22 +93,17 @@ class Cms_model extends CI_Model
     /**
      * Get the links of one direction
      *
-     * @param string $type ID of the specific menu
-     * @return array|null
+     * @return array
      */
-    public function getLinks(string $type = "top"): ?array
+    public function getLinks(): array
     {
-        if (in_array($type, array("top", "side", "bottom"))) {
-            $query = $this->db->query("SELECT * FROM menu WHERE type = ? ORDER BY `parent_id` ASC, `order` ASC", [$type]);
-        } else {
-            $query = $this->db->query("SELECT * FROM menu ORDER BY `order` ASC");
-        }
+        $query = $this->db->query("SELECT * FROM menu ORDER BY `parent_id` ASC, `order` ASC");
 
         if ($query->getNumRows() > 0) {
             return $query->getResultArray();
         }
 
-        return null;
+        return [];
     }
 
     /**
@@ -324,5 +326,18 @@ class Cms_model extends CI_Model
         }
 
         return 0;
+    }
+
+    /**
+     * Get the ucp menus
+     * @return array
+     */
+    public function getUcpMenu(): array
+    {
+        return $this->db->table('menu_ucp')
+            ->select(['id', 'name', 'description', 'link', 'icon', 'order', 'group', 'permission', 'permissionModule'])
+            ->orderBy('`group`', 'ASC')
+            ->orderBy('`order`', 'ASC')
+            ->get()->getResultArray();
     }
 }

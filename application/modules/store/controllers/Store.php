@@ -40,27 +40,27 @@ class Store extends MX_Controller
         clientLang("dp", "store");
 
         // Gather the template data
-        $data = array(
+        $data = [
             'url' => $this->template->page_url,
             'image_path' => $this->template->image_path,
             'vp' => $this->user->getVp(),
             'dp' => $this->user->getDp(),
             'data' => $this->getData(),
             'minimize' => $this->config->item('minimize_groups_by_default')
-        );
+        ];
 
         // Load the content
         $content = $this->template->loadPage("store.tpl", $data);
 
         // Load the topsite page and format the page contents
-        $pageData = array(
+        $pageData = [
             "module" => "default",
             "headline" => breadcrumb([
                             "ucp" => lang("ucp"),
                             "store" => lang("item_store", "store")
             ]),
             "content" => $content
-        );
+        ];
 
         $page = $this->template->loadPage("page.tpl", $pageData);
 
@@ -73,17 +73,17 @@ class Store extends MX_Controller
      *
      * @return Array
      */
-    private function getData()
+    private function getData(): array
     {
         $cache = $this->cache->get("store_items");
 
         if ($cache !== false) {
             return $cache;
         } else {
-            $data = array();
+            $data = [];
 
             foreach ($this->realms->getRealms() as $realm) {
-                // Load all items that belongs to this realm
+                // Load all items that belong to this realm
                 $items = $this->store_model->getItems($realm->getId());
 
                 // Assign the realm name
@@ -100,42 +100,48 @@ class Store extends MX_Controller
     }
 
     /**
-     * Put items in their groups and put un-assigned items in a separate list
+     * Put items in their groups and put unassigned items in a separate list
      *
-     * @param  Array $items
+     * @param array|false $items
      * @return Array
      */
-    private function formatItems($items)
+    private function formatItems(array|false $items): array
     {
-        if ($items != false) {
-            $data = array(
-                'groups' => array(), // Holds group titles and their items
-                'items' => array() // Holds items without a group
-            );
+        $data = [
+            'groups' => [],
+            'items' => []
+        ];
 
-            $currentGroup = null;
+        if (!$items)
+            return $data;
 
-            // Loop through all items
-            foreach ($items as $item) {
-                if (empty($item['group'])) {
-                    array_push($data['items'], $item);
-                } else {
-                    if ($currentGroup != $item['group']) {
-                        $currentGroup = $item['group'];
+        $allGroups = $this->store_model->getStoreGroups();
+        $groupsCache = [];
 
-                        // Assign the name to a group
-                        $data['groups'][$item['group']]['title'] = $this->store_model->getGroupTitle($item['group']);
-                        $data['groups'][$item['group']]['id'] = $this->store_model->getGroupId($data['groups'][$item['group']]['title']);
+        foreach ($allGroups as $group) {
+            $groupsCache[$group['id']] = $group;
+        }
 
-                        // Create the item array
-                        $data['groups'][$item['group']]['items'] = array();
-                    }
-
-                    array_push($data['groups'][$item['group']]['items'], $item);
-                }
+        // Loop through all items
+        foreach ($items as $item) {
+            if (empty($item['group']) || !isset($groupsCache[$item['group']])) {
+                $data['items'][] = $item;
+                continue;
             }
 
-            return $data;
+            if (!isset($data['groups'][$item['group']])) {
+                $group = $groupsCache[$item['group']];
+                $data['groups'][$item['group']] = [
+                    'title' => $group['title'],
+                    'icon' => $group['icon'],
+                    'id' => $group['id'],
+                    'items' => []
+                ];
+            }
+
+            $data['groups'][$item['group']]['items'][] = $item;
         }
+
+        return $data;
     }
 }

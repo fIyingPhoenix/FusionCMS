@@ -9,46 +9,35 @@
 													<img src="{$avatar}" class="max-h-full max-w-full object-cover shadow-sm dark:border-transparent h-16 w-16">
 												</div>
 											</div>
-											<h2 class="font-heading text-3xl font-bold leading-none ltablet:!text-2xl text-white"><span>Welcome back, {$nickname}.</span></h2>
+											<h2 class="font-heading text-3xl font-bold leading-none ltablet:!text-2xl text-white"><span>{lang('welcome_back', 'admin', [$nickname])}</span></h2>
 										</div>
 										<div class="flex h-full flex-1 flex-col px-4 sm:px-6">
-											<h2 class="font-heading text-base font-semibold leading-tight mb-1 text-white"><span>Shortcuts</span></h2>
-											<p class="font-alt text-xs font-normal leading-tight mb-3"><span class="text-white"> Frequently used shortcuts: </span></p>
+											<h2 class="font-heading text-base font-semibold leading-tight mb-1 text-white"><span>{lang('shortcuts', 'admin')}</span></h2>
+											<p class="font-alt text-xs font-normal leading-tight mb-3"><span class="text-white"> {lang('frequently_used_shortcuts', 'admin')} </span></p>
 											<div class="mt-auto flex gap-2">
-												<div class="relative inline-flex shrink-0 items-center justify-center outline-none h-10 w-10 nui-mask nui-mask-blob">
-												    <a href="{$url}changelog/admin" data-toggle="tooltip" data-placement="top" title="ChangeLog">
-														<div class="flex h-full w-full items-center justify-center overflow-hidden text-center transition-all duration-300">
-															<i class="fs-4 fa-duotone fa-list-ul"></i>
-														</div>
-													</a>
-												</div>
-												<div class="relative inline-flex shrink-0 items-center justify-center outline-none h-10 w-10 nui-mask nui-mask-blob">
-												    <a href="{$url}admin/cachemanager" data-toggle="tooltip" data-placement="top" title="Manage cache">
-														<div class="flex h-full w-full items-center justify-center overflow-hidden text-center transition-all duration-300">
-															<i class="fs-4 fa-duotone fa-box-archive"></i>
-														</div>
-													</a>
-												</div>
-												<div class="relative inline-flex shrink-0 items-center justify-center outline-none h-10 w-10 nui-mask nui-mask-blob">
-												    <a href="{$url}page/admin" data-toggle="tooltip" data-placement="top" title="Custom pages">
-														<div class="flex h-full w-full items-center justify-center overflow-hidden text-center transition-all duration-300">
-															<i class="fs-4 fa-duotone fa-window"></i>
-														</div>
-													</a>
-												</div>
-												<div class="relative inline-flex shrink-0 items-center justify-center outline-none h-10 w-10 nui-mask nui-mask-blob">
-												    <a href="{$url}admin/modules" data-toggle="tooltip" data-placement="top" title="Modules">
-														<div class="flex h-full w-full items-center justify-center overflow-hidden text-center transition-all duration-300">
-															<i class="fs-4 fa-duotone fa-sitemap"></i>
-														</div>
-													</a>
-												</div>
+
+                                                <div class="border-muted-200 dark:border-muted-700 dark:bg-muted-800 relative w-full border bg-white transition-all duration-300 rounded-xl p-1">
+                                                    <div class="flex w-full items-center justify-between gap-3" shape="curved">
+                                                        <a href="{$url}changelog/admin" data-toggle="tooltip" data-placement="top" title="{lang('changelog', 'admin')}" class="text-muted-400 hover:bg-primary-500 hover:shadow-primary-500/30 dark:hover:shadow-primary-800/30 flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 hover:text-white hover:shadow-xl">
+                                                            <i class="fa-duotone fa-solid fa-file-invoice"></i>
+                                                        </a>
+                                                        <a href="{$url}admin/cachemanager" data-toggle="tooltip" data-placement="top" title="{lang('manage_cache', 'admin')}" class="text-muted-400 hover:bg-primary-500 hover:shadow-primary-500/30 dark:hover:shadow-primary-800/30 flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 hover:text-white hover:shadow-xl">
+                                                            <i class="fa-duotone fa-solid fa-database"></i>
+                                                        </a>
+                                                        <a href="{$url}page/admin" data-toggle="tooltip" data-placement="top" title="{lang('custom_pages', 'admin')}" class="text-muted-400 hover:bg-primary-500 hover:shadow-primary-500/30 dark:hover:shadow-primary-800/30 flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 hover:text-white hover:shadow-xl">
+                                                            <i class="fa-duotone fa-window"></i>
+                                                        </a>
+                                                        <a href="{$url}admin/modules" data-toggle="tooltip" data-placement="top" title="{lang('modules', 'admin')}" class="text-muted-400 hover:bg-primary-500 hover:shadow-primary-500/30 dark:hover:shadow-primary-800/30 flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 hover:text-white hover:shadow-xl">
+                                                            <i class="fa-duotone fa-solid fa-square-this-way-up"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
 											</div>
 										</div>
 										<div class="border-primary-300/60 flex h-full flex-1 flex-col px-4 sm:border-l sm:px-6">
-											<h2 class="font-heading text-base font-semibold leading-tight mb-1 text-white"><span>Articles</span></h2>
-											<p class="font-alt text-xs font-normal leading-tight mb-3"><span class="text-white"> Submit a new article to your users. </span></p>
-											<div class="mt-auto"><a href="{$url}news/admin" type="button" class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md pull-right is-button rounded is-button-default w-full"><span>News articles</span></a></div>
+											<h2 class="font-heading text-base font-semibold leading-tight mb-1 text-white"><span>{lang('articles', 'admin')}</span></h2>
+											<p class="font-alt text-xs font-normal leading-tight mb-3"><span class="text-white"> {lang('submit_article', 'admin')} </span></p>
+											<div class="mt-auto"><a href="{$url}news/admin" type="button" class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md pull-right is-button rounded is-button-default w-full"><span>{lang('news_articles', 'admin')}</span></a></div>
 										</div>
 									</div>
 								</div>
@@ -94,7 +83,7 @@
 
                                             <div class="mb-1 flex items-center justify-between">
                                                 <h5 class="font-heading text-sm font-medium leading-tight text-muted-500 dark:text-muted-400">
-                                                    <span>Income this month</span>
+                                                    <span>{lang('income_this_month', 'admin')}</span>
                                                 </h5>
                                                 <div class="relative inline-flex shrink-0 items-center justify-center h-8 w-8 rounded-full bg-success-100 text-success-500 dark:bg-success-500/20 dark:text-success-400 dark:border-success-500 dark:border-2">
 
@@ -129,7 +118,7 @@
                                                         </g>
                                                     </svg>
 												{/if}
-                                                <span class="text-muted-400 text-xs">since last month</span>
+                                                <span class="text-muted-400 text-xs">{lang('since_last_month', 'admin')}</span>
                                             </div>
 
                                         </div>
@@ -139,7 +128,7 @@
 
                                             <div class="mb-1 flex items-center justify-between">
                                                 <h5 class="font-heading text-sm font-medium leading-tight text-muted-500 dark:text-muted-400">
-                                                    <span>Votes this month</span>
+                                                    <span>{lang('votes_this_month', 'admin')}</span>
                                                 </h5>
                                                 <div class="relative inline-flex shrink-0 items-center justify-center h-8 w-8 rounded-full bg-yellow-100 text-yellow-500 dark:border-2 dark:border-yellow-500 dark:bg-yellow-500/20 dark:text-yellow-400">
 
@@ -174,7 +163,7 @@
                                                         </g>
                                                     </svg>
 												{/if}
-                                                <span class="text-muted-400 text-xs">since last month</span>
+                                                <span class="text-muted-400 text-xs">{lang('since_last_month', 'admin')}</span>
                                             </div>
 
                                         </div>
@@ -184,7 +173,7 @@
 
                                             <div class="mb-1 flex items-center justify-between">
                                                 <h5 class="font-heading text-sm font-medium leading-tight text-muted-500 dark:text-muted-400">
-                                                    <span>Registrations this month</span>
+                                                    <span>{lang('registrations_this_month', 'admin')}</span>
                                                 </h5>
                                                 <div class="relative inline-flex shrink-0 items-center justify-center h-8 w-8 rounded-full bg-primary-100 text-primary-500 dark:bg-primary-500/20 dark:text-primary-400 dark:border-primary-500 dark:border-2">
 
@@ -219,7 +208,7 @@
                                                         </g>
                                                     </svg>
 												{/if}
-                                                <span class="text-muted-400 text-xs">since last month</span>
+                                                <span class="text-muted-400 text-xs">{lang('since_last_month', 'admin')}</span>
                                             </div>
 
                                         </div>
@@ -270,23 +259,31 @@
 
     const thisYearMonthlyData = [
         {foreach from=$graphMonthly[0] item=data key=key}
-        {if isset($data["month"])}
-        {foreach from=$data["month"] item=month key=keyMonth}
-        {$month},
-        {/foreach}
-        {else}
-        {$month},
-        {/if}
+            {if isset($data["month"])}
+                {foreach from=$data["month"] item=month key=keyMonth}
+                    {if isset($month) && !is_array($month)}
+                        {$month},
+                    {else}
+                        0,
+                    {/if}
+                {/foreach}
+            {else}
+                {$month},
+            {/if}
         {/foreach}];
     const lastYearMonthData = [
         {foreach from=$graphMonthly[1] item=data key=key}
-        {if isset($data["month"])}
-        {foreach from=$data["month"] item=month key=keyMonth}
-        {$month},
-        {/foreach}
-        {else}
-        {$month},
-        {/if}
+            {if isset($data["month"])}
+                {foreach from=$data["month"] item=month key=keyMonth}
+                    {if isset($month) && !is_array($month)}
+                        {$month},
+                    {else}
+                        0,
+                    {/if}
+                {/foreach}
+            {else}
+                {$month},
+            {/if}
         {/foreach}];
     const options = {
         series: [{
@@ -405,24 +402,26 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="mb-4 space-y-2 font-sans">
-                                                <div class="flex items-end gap-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="icon text-primary-500 h-4 w-4" style="" width="1em" height="1em" viewBox="0 0 256 256" data-v-cd102a71>
-                                                        <g fill="currentColor">
-                                                            <path d="M128 24a80 80 0 0 0-80 80c0 72 80 128 80 128s80-56 80-128a80 80 0 0 0-80-80Zm0 112a32 32 0 1 1 32-32a32 32 0 0 1-32 32Z" opacity=".2"/>
-                                                            <path d="M128 64a40 40 0 1 0 40 40a40 40 0 0 0-40-40Zm0 64a24 24 0 1 1 24-24a24 24 0 0 1-24 24Zm0-112a88.1 88.1 0 0 0-88 88c0 31.4 14.51 64.68 42 96.25a254.19 254.19 0 0 0 41.45 38.3a8 8 0 0 0 9.18 0a254.19 254.19 0 0 0 41.37-38.3c27.45-31.57 42-64.85 42-96.25a88.1 88.1 0 0 0-88-88Zm0 206c-16.53-13-72-60.75-72-118a72 72 0 0 1 144 0c0 57.23-55.47 105-72 118Z"/>
-                                                        </g>
-                                                    </svg>
-                                                    <span class="text-muted-400 text-xs">{$location}</span>
-                                                </div>
-                                                <div class="flex items-end gap-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="icon text-primary-500 h-4 w-4" style="" width="1em" height="1em" viewBox="0 0 256 256" data-v-cd102a71>
-                                                        <g fill="currentColor">
-                                                            <path d="M223.94 174.08A48.33 48.33 0 0 1 176 216A136 136 0 0 1 40 80a48.33 48.33 0 0 1 41.92-47.94a8 8 0 0 1 8.3 4.8l21.13 47.2a8 8 0 0 1-.66 7.53L89.32 117a7.93 7.93 0 0 0-.54 7.81c8.27 16.93 25.77 34.22 42.75 42.41a7.92 7.92 0 0 0 7.83-.59l25-21.3a8 8 0 0 1 7.59-.69l47.16 21.13a8 8 0 0 1 4.83 8.31Z" opacity=".2"/>
-                                                            <path d="m222.37 158.46l-47.11-21.11l-.13-.06a16 16 0 0 0-15.17 1.4a8.12 8.12 0 0 0-.75.56L134.87 160c-15.42-7.49-31.34-23.29-38.83-38.51l20.78-24.71c.2-.25.39-.5.57-.77a16 16 0 0 0 1.32-15.06v-.12L97.54 33.64a16 16 0 0 0-16.62-9.52A56.26 56.26 0 0 0 32 80c0 79.4 64.6 144 144 144a56.26 56.26 0 0 0 55.88-48.92a16 16 0 0 0-9.51-16.62ZM176 208A128.14 128.14 0 0 1 48 80a40.2 40.2 0 0 1 34.87-40a.61.61 0 0 0 0 .12l21 47l-20.67 24.74a6.13 6.13 0 0 0-.57.77a16 16 0 0 0-1 15.7c9.06 18.53 27.73 37.06 46.46 46.11a16 16 0 0 0 15.75-1.14a8.44 8.44 0 0 0 .74-.56L168.89 152l47 21.05h.11A40.21 40.21 0 0 1 176 208Z"/>
-                                                        </g>
-                                                    </svg>
-                                                    <span class="text-muted-400 text-xs">{$register_date}</span>
+                                            <div class="space-y-2 font-sans">
+                                                <div class="rounded-lg border-muted-200 dark:border-muted-700 border p-3">
+                                                    <div class="flex items-end gap-2 mb-4">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="icon text-primary-500 h-4 w-4" style="" width="1em" height="1em" viewBox="0 0 256 256" data-v-cd102a71>
+                                                            <g fill="currentColor">
+                                                                <path d="M128 24a80 80 0 0 0-80 80c0 72 80 128 80 128s80-56 80-128a80 80 0 0 0-80-80Zm0 112a32 32 0 1 1 32-32a32 32 0 0 1-32 32Z" opacity=".2"/>
+                                                                <path d="M128 64a40 40 0 1 0 40 40a40 40 0 0 0-40-40Zm0 64a24 24 0 1 1 24-24a24 24 0 0 1-24 24Zm0-112a88.1 88.1 0 0 0-88 88c0 31.4 14.51 64.68 42 96.25a254.19 254.19 0 0 0 41.45 38.3a8 8 0 0 0 9.18 0a254.19 254.19 0 0 0 41.37-38.3c27.45-31.57 42-64.85 42-96.25a88.1 88.1 0 0 0-88-88Zm0 206c-16.53-13-72-60.75-72-118a72 72 0 0 1 144 0c0 57.23-55.47 105-72 118Z"/>
+                                                            </g>
+                                                        </svg>
+                                                        <span class="text-muted-400 text-xs">{$location}</span>
+                                                    </div>
+                                                    <div class="flex items-end gap-2">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="icon text-primary-500 h-4 w-4" style="" width="1em" height="1em" viewBox="0 0 256 256" data-v-cd102a71>
+                                                            <g fill="currentColor">
+                                                                <path d="M223.94 174.08A48.33 48.33 0 0 1 176 216A136 136 0 0 1 40 80a48.33 48.33 0 0 1 41.92-47.94a8 8 0 0 1 8.3 4.8l21.13 47.2a8 8 0 0 1-.66 7.53L89.32 117a7.93 7.93 0 0 0-.54 7.81c8.27 16.93 25.77 34.22 42.75 42.41a7.92 7.92 0 0 0 7.83-.59l25-21.3a8 8 0 0 1 7.59-.69l47.16 21.13a8 8 0 0 1 4.83 8.31Z" opacity=".2"/>
+                                                                <path d="m222.37 158.46l-47.11-21.11l-.13-.06a16 16 0 0 0-15.17 1.4a8.12 8.12 0 0 0-.75.56L134.87 160c-15.42-7.49-31.34-23.29-38.83-38.51l20.78-24.71c.2-.25.39-.5.57-.77a16 16 0 0 0 1.32-15.06v-.12L97.54 33.64a16 16 0 0 0-16.62-9.52A56.26 56.26 0 0 0 32 80c0 79.4 64.6 144 144 144a56.26 56.26 0 0 0 55.88-48.92a16 16 0 0 0-9.51-16.62ZM176 208A128.14 128.14 0 0 1 48 80a40.2 40.2 0 0 1 34.87-40a.61.61 0 0 0 0 .12l21 47l-20.67 24.74a6.13 6.13 0 0 0-.57.77a16 16 0 0 0-1 15.7c9.06 18.53 27.73 37.06 46.46 46.11a16 16 0 0 0 15.75-1.14a8.44 8.44 0 0 0 .74-.56L168.89 152l47 21.05h.11A40.21 40.21 0 0 1 176 208Z"/>
+                                                            </g>
+                                                        </svg>
+                                                        <span class="text-muted-400 text-xs">{$register_date}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -450,6 +449,14 @@
                                                                 <span class="text-muted-500 dark:text-muted-400 group-hover:text-primary-500 transition-colors duration-300"> CodeIgniter version </span>
                                                             </p>
                                                             <div class="bg-muted-200 dark:bg-muted-700 text-muted-500 dark:text-muted-200 flex h-7 w-auto items-center justify-center rounded-full text-xs p-2"><span>{$ci_version}</span></div>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="router-link-active router-link-exact-active group flex items-center justify-between">
+                                                            <p class="font-alt text-sm font-normal leading-normal leading-normal">
+                                                                <span class="text-muted-500 dark:text-muted-400 group-hover:text-primary-500 transition-colors duration-300"> Smarty version </span>
+                                                            </p>
+                                                            <div class="bg-muted-200 dark:bg-muted-700 text-muted-500 dark:text-muted-200 flex h-7 w-auto items-center justify-center rounded-full text-xs p-2"><span>{$smarty_version}</span></div>
                                                         </a>
                                                     </li>
                                                     <li>
@@ -539,38 +546,57 @@
                                         </div>
                                     </div>
 									{if !$realm_status}
-									{foreach from=$realms item=realm key=index name=count}
-                                    <div class="border-muted-200 dark:border-muted-700 dark:bg-muted-800 relative w-full border bg-white transition-all duration-300 rounded-md p-6">
-                                        <div class="mb-10 flex items-center justify-between">
-                                            <h3 class="font-heading text-base font-semibold leading-tight text-muted-800 dark:text-white">
-                                                <span>Realm: {$realm->getName()}</span>
-                                            </h3>
-                                        </div>
-											<div class="mb-6">
-												<div>
-													<div class="semi-donut text-muted-500 dark:text-muted-400 m-2" style="--percentage : {$realm->getPercentage()};">
-														{if $realm->isOnline()}
-															<span>Online</span>
-														{else}
-															<span>Offline</span>
-														{/if}
-													</div>
-												</div>
-											</div>
-                                        <div class="mt-auto">
-                                            <div class="border-muted-200 dark:border-muted-700 flex w-full border-t pt-4 text-center">
-                                                <div class="border-muted-200 dark:border-muted-700 flex-1 border-r px-2">
-                                                    <span class="text-muted-400 font-sans text-xs"> Total players online </span>
-                                                    <p class="text-muted-800 dark:text-muted-100 font-sans text-lg font-medium"> {$realm->getOnline()} </p>
-                                                </div>
-                                                <div class="flex-1 px-2">
-                                                    <span class="text-muted-400 font-sans text-xs"> Uptime </span>
-                                                    <p class="text-muted-800 dark:text-muted-100 font-sans text-lg font-medium"> {if $realm->isOnline()} {$uptimes[$realm->getId()]} {else} 0 {/if}</p>
-                                                </div>
+                                        <div id="realms-container" class="ptablet:grid-cols-2 ltablet:flex ltablet:flex-col grid gap-2 lg:flex lg:flex-col">
+                                            <div id="realms-loading" class="flex justify-center items-center p-4 w-full text-muted-500 dark:text-muted-400 text-sm">
+                                                <i class="fa-solid fa-spinner-third fa-spin fa-2xl"></i>
                                             </div>
+                                            <script>
+                                                document.addEventListener("DOMContentLoaded", function () {
+                                                    fetch(Config.URL + "admin/realmstatus")
+                                                        .then(response => response.json())
+                                                        .then(data => {
+                                                            const container = document.getElementById('realms-container');
+                                                            const loader = document.getElementById('realms-loading');
+                                                            if (loader) loader.remove();
+                                                            data.realms.forEach(realm => {
+                                                                const card = document.createElement('div');
+                                                                card.className = "border-muted-200 dark:border-muted-700 dark:bg-muted-800 relative w-full border bg-white transition-all duration-300 rounded-md p-6 mb-3";
+
+                                                                card.innerHTML = `
+                                                                        <div class="mb-10 flex items-center justify-between">
+                                                                            <h3 class="font-heading text-base font-semibold leading-tight text-muted-800 dark:text-white">
+                                                                                <span>Realm: ${ realm.name }</span>
+                                                                            </h3>
+                                                                        </div>
+                                                                        <div class="mb-6">
+                                                                            <div>
+                                                                                <div class="semi-donut text-muted-500 dark:text-muted-400 m-2" style="--percentage : ${ realm.percentage };">
+                                                                                    <span>${ realm.is_online ? 'Online' : 'Offline'}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="mt-auto">
+                                                                            <div class="border-muted-200 dark:border-muted-700 flex w-full border-t pt-4 text-center">
+                                                                                <div class="border-muted-200 dark:border-muted-700 flex-1 border-r px-2">
+                                                                                    <span class="text-muted-400 font-sans text-xs"> Total players online </span>
+                                                                                    <p class="text-muted-800 dark:text-muted-100 font-sans text-lg font-medium"> ${ realm.online_players } </p>
+                                                                                </div>
+                                                                                <div class="flex-1 px-2">
+                                                                                    <span class="text-muted-400 font-sans text-xs"> Uptime </span>
+                                                                                    <p class="text-muted-800 dark:text-muted-100 font-sans text-lg font-medium"> ${ realm.uptime } </p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                `;
+                                                                container.appendChild(card);
+                                                            });
+                                                        })
+                                                        .catch(error => {
+                                                            console.error('Error loading realms:', error);
+                                                        });
+                                                });
+                                            </script>
                                         </div>
-                                    </div>
-									{/foreach}
 									{/if}
                                 </div>
                             </div>

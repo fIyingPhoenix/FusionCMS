@@ -15,7 +15,6 @@ class Modules extends MX_Controller
         $this->load->library('administrator');
         $this->load->helper('file');
         $this->load->library('upload');
-        require_once('application/libraries/Prettyjson.php');
 
         requirePermission("view");
     }
@@ -71,11 +70,9 @@ class Modules extends MX_Controller
         // Replace the setting with the newValue
         $manifest[$setting] = $newValue;
 
-        $prettyJSON = new PrettyJSON($manifest);
-
         // Rewrite the file with the new data
         $fileHandle = fopen($filePath, "w");
-        fwrite($fileHandle, $prettyJSON->get());
+        fwrite($fileHandle, json_encode($manifest, JSON_PRETTY_PRINT));
         fclose($fileHandle);
     }
 

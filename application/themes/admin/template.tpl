@@ -17,8 +17,8 @@
         <meta property="og:url" content="{$url}">
         <meta property="og:locale" content="en">
         <meta property="og:site_name" content="{if $title}{$title}{/if}{$serverName}">
-        <meta name="description" content="Admin Panel {$serverName}">
-        <meta property="og:description" content="Admin Panel {$serverName}">
+        <meta name="description" content="{lang('admin_panel', 'admin_theme')} {$serverName}">
+        <meta property="og:description" content="{lang('admin_panel', 'admin_theme')} {$serverName}">
         <meta property="og:type" content="website">
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
         <meta property="og:title" content="{$serverName}">
@@ -27,7 +27,7 @@
 
 		<link rel="stylesheet" href="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/vendor/bootstrap/css/bootstrap.css">
 		<link rel="stylesheet" href="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/vendor/animate/animate.compat.css">
-		<link rel="stylesheet" href="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/fonts/fontawesome/v6.6.0/css/all.css">
+		<link rel="stylesheet" href="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/fonts/fontawesome/v7.0.0/css/all.css">
 		<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 		<link rel="stylesheet" href="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/vendor/magnific-popup/magnific-popup.css">
 		<link rel="stylesheet" href="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/vendor/bootstrap-datepicker/css/bootstrap-datepicker3.css">
@@ -49,11 +49,13 @@
 		<link rel="stylesheet" href="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/vendor/dropzone/dropzone.css">
 		<link rel="stylesheet" href="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/css/theme.css">
 		<link rel="stylesheet" href="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/css/custom.css">
+		<link rel="stylesheet" href="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}node_modules/fontawesome-iconpicker/dist/css/fontawesome-iconpicker.min.css">
 		{if $extra_css}<link rel="stylesheet" href="{$url}application/{$extra_css}" type="text/css">{/if}
 
 		<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/vendor/jquery/jquery.min.js"></script>
 		<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 		<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/vendor/modernizr/modernizr.js"></script>
+		<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/js/language.js"></script>
 		<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/vendor/jquery-browser-mobile/jquery.browser.mobile.js"></script>
 		<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
 		<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/vendor/common/common.js"></script>
@@ -97,6 +99,7 @@
 		<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/vendor/imagesloader/jquery.imagesloader-1.0.1.js"></script>
 		<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/js/custom.js"></script>
 		<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/vendor/apexcharts/apexcharts.min.js"></script>
+		<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}node_modules/fontawesome-iconpicker/dist/js/fontawesome-iconpicker.min.js"></script>
 
 		<script type="text/javascript">
 		function getCookie(c_name) {
@@ -120,9 +123,12 @@
 			defaultLanguage: "{$defaultLanguage}",
 			languages: [ {foreach from=$languages item=language}"{$language}",{/foreach} ]
 		};
+
+		$(document).ready(function () {
+			{if $client_language}Language.set("{addslashes($client_language)}");{/if}
+		});
 	</script>
 
-	<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/js/router.js"></script>
 	<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/js/adminMenu.js"></script>
 	<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/js/mli.js"></script>
 	<script src="{if $cdn_link != false}{$cdn_link}{else}{$url}{/if}application/themes/admin/assets/js/login.js"></script>
@@ -137,13 +143,6 @@
 		{
 			$(document).ready(function()
 			{
-				{if $extra_css}
-					Router.loadedCSS.push("{$extra_css}");
-				{/if}
-				{if $extra_js}
-					Router.loadedJS.push("{$extra_js}");
-				{/if}
-
 				$('[data-bs-toggle=tooltip],[rel=tooltip]').tooltip({ container: 'body' });
 				$(".nano").nanoScroller();
 				$(".nano-pane").show();
@@ -159,14 +158,6 @@
 			<div class="dark:bg-muted-800 border-muted-200 dark:border-muted-700 fixed left-0 top-0 z-[60] flex h-full flex-col border-r bg-white transition-all duration-300 w-[280px] lg:translate-x-0" __sidebar__>
 				<div class="flex h-16 w-full items-center justify-between px-6">
 					<img src="{$url}application/themes/admin/assets/images/fusion.svg" class="fusion-logo mt-4"/>
-					<button type="button" class="nui-mask nui-mask-blob hover:bg-muted-200 dark:hover:bg-muted-700/60 text-muted-500 dark:text-muted-400 hidden h-10 w-10 cursor-pointer items-center justify-center transition-colors duration-300 lg:flex">
-						<svg data-v-cd102a71="" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="icon h-4 w-4" width="1em" height="1em" viewBox="0 0 24 24">
-							<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-								<circle cx="11" cy="11" r="8"></circle>
-								<path d="m21 21l-4.35-4.35"></path>
-							</g>
-						</svg>
-					</button>
 					<button type="button" class="nui-mask nui-mask-blob hover:bg-muted-200 dark:hover:bg-muted-800 text-muted-700 dark:text-muted-400 flex h-10 w-10 cursor-pointer items-center justify-center transition-colors duration-300 lg:hidden" __sidebartogglermobile__>
 						<svg data-v-cd102a71="" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="icon h-5 w-5" width="1em" height="1em" viewBox="0 0 24 24">
 							<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m7 7l-7-7l7-7"></path>
@@ -178,7 +169,7 @@
 						<li>
 							<a href="{$url}admin" class="nui-focus text-muted-500 dark:text-muted-400/80 hover:bg-muted-100 dark:hover:bg-muted-700/60 hover:text-muted-600 dark:hover:text-muted-200 flex cursor-pointer items-center gap-4 rounded-lg py-3 transition-colors duration-300 px-4">
 								<i class="fa-duotone fa-home {if $current_page == "admin"}text-primary-500{/if}"></i>
-								<span class="whitespace-nowrap font-sans text-sm block {if $current_page == "admin"}text-primary-500{/if}">Dashboard</span>
+								<span class="whitespace-nowrap font-sans text-sm block {if $current_page == "admin"}text-primary-500{/if}">{lang('dashboard', 'admin_theme')}</span>
 							</a>
 						</li>
 						
@@ -214,8 +205,8 @@
 						{if hasPermission("toggleModules", "admin")}
 						<li>
 							<a href="{$url}admin/modules" class="nui-focus text-muted-500 dark:text-muted-400/80 hover:bg-muted-100 dark:hover:bg-muted-700/60 hover:text-muted-600 dark:hover:text-muted-200 flex w-full cursor-pointer items-center gap-4 rounded-lg py-3 transition-colors duration-300 px-4">
-								<i class="fa-duotone fa-sitemap {if $current_page == "modules"}text-primary-500{/if}"></i>
-								<span class="whitespace-nowrap font-sans text-sm block {if $current_page == "modules"}text-primary-500{/if}">Modules</span>
+								<i class="fa-duotone fa-solid fa-square-this-way-up {if $current_page == "modules"}text-primary-500{/if}"></i>
+								<span class="whitespace-nowrap font-sans text-sm block {if $current_page == "modules"}text-primary-500{/if}">{lang('modules', 'admin_theme')}</span>
 							</a>
 						</li>
 						{/if}
@@ -321,7 +312,7 @@
 									<div role="menu" tabindex="0" data-headlessui-state="open" class="dropdown-menu divide-muted-100 border-muted-200 dark:divide-muted-700 dark:border-muted-700 dark:bg-muted-800 absolute end-0 mt-2 w-64 origin-top-right divide-y rounded-md shadow-lg" id="language_picker">
 										<div class="border-muted-200 dark:border-muted-700 dark:bg-muted-800 border fixed top-0 z-[100] w-96 end-0">
 											<div class="flex h-16 w-full items-center justify-between px-10">
-												<h2 class="font-heading text-muted-700 text-lg font-semibold dark:text-white"> Select language </h2>
+												<h2 class="font-heading text-muted-700 text-lg font-semibold dark:text-white"> {lang('select_language', 'admin_theme')} </h2>
 											</div>
 											<div class="relative h-[calc(100%_-_64px)] w-full px-10">
 												<div class="grid grid-cols-3 py-6">
@@ -364,8 +355,8 @@
 									<div role="menu" tabindex="0" data-headlessui-state="open" class="dropdown-menu divide-muted-100 border-muted-200 dark:divide-muted-700 dark:border-muted-700 dark:bg-muted-800 absolute end-0 mt-2 w-72 origin-top-right divide-y rounded-md border bg-white shadow-lg focus:outline-none">
 										<div class="p-4" role="none">
 											<div class="relative flex items-center justify-between" role="none">
-												<h4 class="font-heading text-muted-500 dark:text-muted-200 text-xs uppercase" role="none"> Notifications </h4>
-												<a aria-current="page" href="javascript:void(0)" onClick="Notify.markAllRead()" class="router-link-active router-link-exact-active font-alt text-primary-500 text-sm font-semibold" role="none"> Mark all read </a>
+												<h4 class="font-heading text-muted-500 dark:text-muted-200 text-xs uppercase" role="none"> {lang('notifications', 'admin_theme')} </h4>
+												<a aria-current="page" href="javascript:void(0)" onClick="Notify.markAllRead()" class="router-link-active router-link-exact-active font-alt text-primary-500 text-sm font-semibold" role="none"> {lang('mark_all_read', 'admin_theme')} </a>
 											</div>
 										</div>
 										<div id="content"></div>
@@ -384,15 +375,15 @@
 											<div class="relative mx-auto flex h-20 w-20 items-center justify-center rounded-full" role="none"><img src="{$avatar}" class="max-w-full rounded-full object-cover shadow-sm dark:border-transparent" alt="" role="none"></div>
 											<div class="mt-3" role="none">
 												<h6 class="font-heading text-muted-800 text-sm font-medium dark:text-white mb-2" role="none"> {$nickname} </h6>
-												<a href="{$url}gm" type="button" class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md w-full" role="none"> GM Panel </a>
+												<a href="{$url}gm" type="button" class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md w-full" role="none"> {lang('gm_panel', 'admin_theme')} </a>
 											</div>
 										</div>
 										<div class="px-6 py-1.5" role="none">
-											<a href="{$url}ucp" type="button" class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md w-full mb-2" role="none"> UCP </a>
-											<a href="javascript:void(0)" type="button" class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md w-full mb-2" onClick="Custom.destroySession()" role="none"> Lock Screen </a>
+											<a href="{$url}ucp" type="button" class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md w-full mb-2" role="none"> {lang('ucp', 'admin_theme')} </a>
+											<a href="javascript:void(0)" type="button" class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md w-full mb-2" onClick="Custom.destroySession()" role="none"> {lang('lock_screen', 'admin_theme')} </a>
 										</div>
 										<div class="p-6" role="none">
-											<a href="{$url}logout" type="button" class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md w-full" role="none"> Logout </a>
+											<a href="{$url}logout" type="button" class="relative font-sans font-normal text-sm inline-flex items-center justify-center leading-5 no-underline h-8 px-3 py-2 space-x-1 border nui-focus transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed hover:enabled:shadow-none text-muted-700 border-muted-300 dark:text-white dark:bg-muted-700 dark:border-muted-600 dark:hover:enabled:bg-muted-600 hover:enabled:bg-muted-50 dark:active:enabled:bg-muted-700/70 active:enabled:bg-muted-100 rounded-md w-full" role="none"> {lang('logout', 'admin_theme')} </a>
 										</div>
 									</div>
                                 </div>

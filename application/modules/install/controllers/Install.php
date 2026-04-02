@@ -23,11 +23,20 @@ class Install extends MX_Controller
         $this->csrf_protection(false);
 
         $data = [
+            'base_url' => base_url(),
             'css' => basename(APPPATH) . '/modules/install/css/install.css',
-            'INSTALL_PATH' => basename(APPPATH) . '/modules/install/'
+            'install_path' => basename(APPPATH) . '/modules/install/',
+            'upgrade_url' => base_url('install/upgrade'),
+            'year' => date('Y'),
         ];
 
-       die($this->load->view('install', $data, true));
+        if (!isset($this->smarty)) {
+            $this->load->library('smartyengine', null, 'smarty');
+        }
+
+        $output = $this->smarty->view('modules/install/views/install.tpl', $data, true);
+
+        die($output);
     }
 
     public function next()
@@ -49,9 +58,123 @@ class Install extends MX_Controller
                 case 'checkPhpVersion': $this->checkPhpVersion(); break;
                 case 'setAndCheckDbConnection': $this->setAndCheckDbConnection(); break;
                 case 'checkAuthConfig': $this->checkAuthConfig(); break;
+                case 'autoDetectAuthConfig': $this->autoDetectAuthConfig(); break;
                 case 'final': $this->finalStep(); break;
                 case 'getEmulators': $this->getEmulators(); break;
             }
+        }
+    }
+
+    private function autoDetectAuthConfig()
+    {
+        $required = ['auth_hostname', 'auth_username', 'auth_database'];
+
+        foreach ($required as $field) {
+            if (!isset($_POST[$field]) || $_POST[$field] === '') {
+                die('Missing DB field: ' . $field);
+            }
+        }
+
+        $hostname = $_POST['auth_hostname'];
+        $username = $_POST['auth_username'];
+        $password = $_POST['auth_password'] ?? '';
+        $database = $_POST['auth_database'];
+        $port = !empty($_POST['auth_port']) ? (int)$_POST['auth_port'] : 3306;
+
+        try {
+            $mysqli = new mysqli($hostname, $username, $password, $database, $port);
+        } catch (Throwable $e) {
+            die('Auto detect failed: Auth Connection Error (' . $e->getCode() . ') ' . $e->getMessage());
+        }
+
+        if ($mysqli->connect_errno) {
+            die('Auto detect failed: Auth Connection Error (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error);
+        }
+
+        try {
+            $stmt = $mysqli->prepare('SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ?');
+
+            if (!$stmt) {
+                die('Auto detect failed: Unable to prepare schema query.');
+            }
+
+            $stmt->bind_param('s', $database);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $tables = [];
+            while ($column = $result->fetch_assoc()) {
+                $tableName = strtolower($column['TABLE_NAME']);
+                $columnName = strtolower($column['COLUMN_NAME']);
+
+                if (!isset($tables[$tableName])) {
+                    $tables[$tableName] = [];
+                }
+
+                $tables[$tableName][$columnName] = true;
+            }
+
+            $stmt->close();
+
+            $hasColumn = static function (array $tableMap, array $tableNames, string $columnName): bool {
+                $columnName = strtolower($columnName);
+
+                foreach ($tableNames as $tableName) {
+                    $tableName = strtolower($tableName);
+
+                    if (isset($tableMap[$tableName][$columnName])) {
+                        return true;
+                    }
+                }
+
+                return false;
+            };
+
+            $hasTable = static function (array $tableMap, array $tableNames): bool {
+                foreach ($tableNames as $tableName) {
+                    if (isset($tableMap[strtolower($tableName)])) {
+                        return true;
+                    }
+                }
+
+                return false;
+            };
+
+            $accountTables = ['account', 'accounts'];
+            $battleNetTables = ['battlenet_accounts', 'battle_net_accounts', 'bnet_accounts'];
+
+            $accountEncryption = 'SRP6';
+            if ($hasColumn($tables, $accountTables, 'salt') && $hasColumn($tables, $accountTables, 'verifier')) {
+                $accountEncryption = 'SRP6';
+            } elseif ($hasColumn($tables, $accountTables, 'sha_pass_hash')) {
+                $accountEncryption = 'SPH';
+            } elseif ($hasColumn($tables, $accountTables, 'v') && $hasColumn($tables, $accountTables, 's')) {
+                $accountEncryption = 'SRP';
+            }
+
+            $hasRbac = $hasTable($tables, ['rbac_permissions', 'rbac_account_permissions', 'rbac_linked_permissions']);
+            $hasBattleNet = $hasTable($tables, $battleNetTables);
+
+            $battleNetEncryption = 'SRP6_V2';
+            if ($hasBattleNet && $hasColumn($tables, $battleNetTables, 'sha_pass_hash')) {
+                $battleNetEncryption = 'SPH';
+            } elseif ($hasBattleNet && $hasColumn($tables, $battleNetTables, 'salt') && $hasColumn($tables, $battleNetTables, 'verifier')) {
+                $battleNetEncryption = 'SRP6_V2';
+            }
+
+            $totpSecret = $hasColumn($tables, $accountTables, 'totp_secret') || $hasColumn($tables, $accountTables, 'token_key');
+            $totpSecretName = $hasColumn($tables, $accountTables, 'totp_secret') ? 'totp_secret' : 'token_key';
+
+            die(json_encode([
+                'realmd_account_encryption' => $accountEncryption,
+                'realmd_rbac' => $hasRbac ? 'true' : 'false',
+                'realmd_battle_net' => $hasBattleNet ? 'true' : 'false',
+                'realmd_battle_net_encryption' => $battleNetEncryption,
+                'realmd_totp_secret' => $totpSecret ? 'true' : 'false',
+                'realmd_totp_secret_name' => $totpSecretName,
+            ]));
+        } finally {
+            $mysqli->close();
         }
     }
 
@@ -64,33 +187,86 @@ class Install extends MX_Controller
 
     private function check()
     {
-        if (! isset($_GET['test']))
-            return;
-        if (! isset($_GET['path']))
-            return;
+        $folder = $_GET['test'] ?? null;
+        $path   = $_GET['path'] ?? null;
 
-        $folder = $_GET['test'];
-        $path = $_GET['path'];
+        if (empty($folder) || empty($path)) {
+            die("Missing parameters");
+        }
 
-        $file = fopen($path ."/".$folder."/write_test.txt", "w");
+        $basePaths = [
+            'application' => APPPATH,
+            'writable' => WRITEPATH,
+        ];
 
-        fwrite($file, "success");
-        fclose($file);
+        if (!isset($basePaths[$path])) {
+            die('400: Invalid path alias ' . $path);
+        }
 
-        unlink($path ."/".$folder."/write_test.txt");
+        $basePath = realpath($basePaths[$path]);
 
+        if ($basePath === false || !is_dir($basePath)) {
+            die('500: Base path not found ' . $basePaths[$path]);
+        }
+
+        $targetDir = realpath($basePath . DIRECTORY_SEPARATOR . trim($folder, '/\\'));
+
+        if ($targetDir === false || !is_dir($targetDir)) {
+            die('404: Folder not found ' . $folder);
+        }
+
+        if (strpos($targetDir, $basePath) !== 0) {
+            die('400: Invalid folder path ' . $folder);
+        }
+
+        // Check write access
+        if (!is_writable($targetDir)) {
+            die("403: No write permission to " . $targetDir);
+        }
+
+        $testFile = @tempnam($targetDir, 'fusion_install_');
+
+        if ($testFile === false) {
+            die('500: Failed to create temp file in ' . $targetDir);
+        }
+
+        $result = @file_put_contents($testFile, 'success', LOCK_EX);
+
+        if ($result === false) {
+            @unlink($testFile);
+            die("500: Failed to write file " . $testFile);
+        }
+
+        // Delete the test file
+        @unlink($testFile);
+
+        // Success
         die("1");
     }
 
     private function checkPhpExtensions()
     {
-        $req = ['mysqli', 'curl', 'openssl', 'soap', 'gd', 'gmp', 'mbstring', 'intl', 'json', 'xml', 'zip'];
-        $loaded = get_loaded_extensions();
+        $checks = [
+            'mysqli' => static fn(): bool => extension_loaded('mysqli'),
+            'curl' => static fn(): bool => extension_loaded('curl'),
+            'openssl' => static fn(): bool => extension_loaded('openssl'),
+            'soap' => static fn(): bool => extension_loaded('soap'),
+            'gd' => static fn(): bool => extension_loaded('gd'),
+            'gmp' => static fn(): bool => extension_loaded('gmp'),
+            'mbstring' => static fn(): bool => extension_loaded('mbstring'),
+            'intl' => static fn(): bool => extension_loaded('intl'),
+            'json' => static fn(): bool => extension_loaded('json'),
+            'xml' => static fn(): bool => extension_loaded('xml') || extension_loaded('libxml'),
+            'zip' => static fn(): bool => extension_loaded('zip'),
+        ];
+
         $errors = [];
 
-        foreach ($req as $ext)
-            if (! in_array($ext, $loaded))
-                $errors[] = $ext;
+        foreach ($checks as $extension => $check) {
+            if (!$check()) {
+                $errors[] = $extension;
+            }
+        }
 
         die($errors ? join(', ', $errors) : '1');
     }
@@ -98,18 +274,64 @@ class Install extends MX_Controller
     private function checkApacheModules()
     {
         $req = ['mod_rewrite', 'mod_headers', 'mod_expires', 'mod_deflate', 'mod_filter'];
-        $loaded = function_exists('apache_get_modules') ? apache_get_modules() : false;
+        $serverSoftware = strtolower((string) ($_SERVER['SERVER_SOFTWARE'] ?? 'unknown'));
 
-        if(is_bool($loaded) && !$loaded)
-            die('2');
+        // Native Apache module detection when available.
+        if (str_contains($serverSoftware, 'apache')) {
+            $loaded = function_exists('apache_get_modules') ? apache_get_modules() : false;
 
-        $errors = [];
+            if ($loaded === false || !is_array($loaded)) {
+                die('2');
+            }
+            $errors = [];
 
-        foreach ($req as $ext)
-            if (!in_array($ext, $loaded))
-                $errors[] = $ext;
+            foreach ($req as $ext)
+                if (!in_array($ext, $loaded, true))
+                    $errors[] = $ext;
 
-        die($errors ? join(', ', $errors) : '1');
+            die($errors ? join(', ', $errors) : '1');
+        }
+
+        // Best-effort checks for non-Apache servers. We only fail on things we can prove missing.
+        if (str_contains($serverSoftware, 'nginx')) {
+            if (!function_exists('shell_exec')) {
+                die('1');
+            }
+
+            $disabledFunctions = array_map('trim', explode(',', (string) ini_get('disable_functions')));
+            if (in_array('shell_exec', $disabledFunctions, true)) {
+                die('1');
+            }
+
+            $nginxVersion = @shell_exec('nginx -V 2>&1');
+            if (!is_string($nginxVersion) || trim($nginxVersion) === '') {
+                die('1');
+            }
+
+            $errors = [];
+
+            // Nginx directives mapping:
+            // - rewrite => ngx_http_rewrite_module
+            // - headers/expires => ngx_http_headers_module
+            // - deflate => ngx_http_gzip_module
+            if (str_contains($nginxVersion, '--without-http_rewrite_module')) {
+                $errors[] = 'mod_rewrite';
+            }
+
+            if (str_contains($nginxVersion, '--without-http_headers_module')) {
+                $errors[] = 'mod_headers';
+                $errors[] = 'mod_expires';
+            }
+
+            if (str_contains($nginxVersion, '--without-http_gzip_module')) {
+                $errors[] = 'mod_deflate';
+            }
+
+            // mod_filter has no strict 1:1 equivalent we can reliably detect across non-Apache stacks.
+            die($errors ? join(', ', array_values(array_unique($errors))) : '1');
+        }
+
+        die('1');
     }
 
     private function checkPhpVersion()
@@ -156,6 +378,13 @@ class Database extends Config
         "strictOn" => false,
         "failover" => [],
         "port" => '.(int)$_POST['cms_port'].',
+        "numberNative" => false,
+        "foundRows"    => false,
+        "dateFormat"   => [
+            "date"     => "Y-m-d",
+            "datetime" => "Y-m-d H:i:s",
+            "time"     => "H:i:s",
+        ],
     ];
 
     public array $account = [
@@ -176,6 +405,13 @@ class Database extends Config
         "strictOn" => false,
         "failover" => [],
         "port" => '.(int)$_POST['auth_port'].',
+        "numberNative" => false,
+        "foundRows"    => false,
+        "dateFormat"   => [
+            "date"     => "Y-m-d",
+            "datetime" => "Y-m-d H:i:s",
+            "time"     => "H:i:s",
+        ],
     ];
 }
 ';
@@ -224,57 +460,65 @@ class Database extends Config
         die('1');
     }
 
+    private function saveConfig(string $file, array $data): void
+    {
+        $config = new ConfigEditor($file);
+
+        foreach ($data as $key => $value) {
+            $config->set($key, $value);
+        }
+
+        $config->save();
+    }
+
     private function config()
     {
+        // owner.php
         $owner = fopen("application/config/owner.php", "w");
         fwrite($owner, '<?php $config["owner"] = "'.addslashes($_POST['superadmin']).'";');
         fclose($owner);
 
         require_once('application/libraries/ConfigEditor.php');
 
+        // fusion.php
         $distConfig = 'application/config/fusion.php.dist';
-        $config = 'application/config/fusion.php';
+        $fusionConfig = 'application/config/fusion.php';
         if(file_exists($distConfig))
-            copy($distConfig, $config); // preserve the original in-case they mess up the new one
+            copy($distConfig, $fusionConfig); // preserve the original in-case they mess up the new one
 
-        $config = new ConfigEditor($config);
+        $fusionData = [
+            'title'         => $_POST['title'],
+            'server_name'   => $_POST['server_name'],
+            'realmlist'     => $_POST['realmlist'],
+            'keywords'      => $_POST['keywords'],
+            'description'   => $_POST['description'],
+            'analytics'     => !empty($_POST['analytics']) ? $_POST['analytics'] : false,
+            'security_code' => $_POST['security_code'],
+            'max_expansion' => $_POST['max_expansion'],
+        ];
 
-        $data['title'] = $_POST['title'];
-        $data['server_name'] = $_POST['server_name'];
-        $data['realmlist'] = $_POST['realmlist'];
-        $data['keywords'] = $_POST['keywords'];
-        $data['description'] = $_POST['description'];
-        $data['analytics'] = ($_POST['analytics']) ? $_POST['analytics'] : false;
-        $data['cdn'] = ($_POST['cdn'] == '1') ? true : false;
-        $data['security_code'] = $_POST['security_code'];
-        $data['max_expansion'] = $_POST['max_expansion'];
+        $this->saveConfig($fusionConfig, $fusionData);
 
-        foreach($data as $key => $value)
-        {
-            $config->set($key, $value);
-        }
+        // cdn.php
+        $cdnData = [
+            'cdn'           => ($_POST['cdn'] == '1') ? true : false,
+            'cdn_link'      => $_POST['cdn_link'],
+        ];
 
-        $config->save();
+        $this->saveConfig('application/config/cdn.php', $cdnData);
 
-        $config = 'application/config/captcha.php';
-        $config = new ConfigEditor($config);
+        // captcha.php
+        $captchaData = [
+            'use_captcha'          => ($_POST['captcha'] == 'disabled') ? false : true,
+            'captcha_type'         => ($_POST['captcha'] == 'recaptcha') ? 'recaptcha' : 'inbuilt',
+            'recaptcha_site_key'   => $_POST['site_key'],
+            'recaptcha_secret_key' => $_POST['secret_key'],
+        ];
 
-        $data['use_captcha'] = ($_POST['captcha'] == 'disabled') ? false : true;
-        $data['captcha_type'] = ($_POST['captcha'] == 'recaptcha') ? 'recaptcha' : 'inbuilt';
-        $data['recaptcha_site_key'] = $_POST['site_key'];
-        $data['recaptcha_secret_key'] = $_POST['secret_key'];
+        $this->saveConfig('application/config/captcha.php', $captchaData);
 
-        foreach($data as $key => $value)
-        {
-            $config->set($key, $value);
-        }
-
-        $config->save();
-
-        // config/auth.php
-        $config = new ConfigEditor('application/config/auth.php');
-
-        $data = [
+        // auth.php
+        $authData = [
             'rbac'                  => $_POST['realmd_rbac'],
             'battle_net'            => $_POST['realmd_battle_net'],
             'totp_secret'           => $_POST['realmd_totp_secret'],
@@ -283,15 +527,12 @@ class Database extends Config
         ];
 
         if(!empty($_POST['realmd_battle_net']) && $_POST['realmd_battle_net'] == 'true')
-            $data['battle_net_encryption'] = $_POST['realmd_battle_net_encryption'];
+            $authData['battle_net_encryption'] = $_POST['realmd_battle_net_encryption'];
 
         if(!empty($_POST['realmd_totp_secret']) && $_POST['realmd_totp_secret'] == 'true')
-            $data['realmd_totp_secret_name'] = $_POST['realmd_totp_secret_name'];
+            $authData['realmd_totp_secret_name'] = $_POST['realmd_totp_secret_name'];
 
-        foreach($data as $key => $value)
-            $config->set($key, $value);
-
-        $config->save();
+        $this->saveConfig('application/config/auth.php', $authData);
 
         die('1');
     }
@@ -422,6 +663,13 @@ class Database extends Config
                 'compress' => false,
                 'strictOn' => false,
                 'failover' => [],
+                'numberNative' => false,
+                'foundRows'    => false,
+                'dateFormat'   => [
+                    'date'     => 'Y-m-d',
+                    'datetime' => 'Y-m-d H:i:s',
+                    'time'     => 'H:i:s',
+                ],
             ];
 
             $worldConfig = [
@@ -442,6 +690,13 @@ class Database extends Config
                 'compress' => false,
                 'strictOn' => false,
                 'failover' => [],
+                'numberNative' => false,
+                'foundRows'    => false,
+                'dateFormat'   => [
+                    'date'     => 'Y-m-d',
+                    'datetime' => 'Y-m-d H:i:s',
+                    'time'     => 'H:i:s',
+                ],
             ];
 
             // Connect to characters

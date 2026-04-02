@@ -221,15 +221,15 @@ class RichRenderer extends AbstractRenderer
         $out .= '>';
 
         if (self::$access_paths && $c->getDepth() > 0 && null !== ($ap = $c->getAccessPath())) {
-            $out .= '<span class="kint-access-path-trigger" title="Show access path">&rlarr;</span>';
+            $out .= '<span class="kint-access-path-trigger" title="Show access path"></span>';
         }
 
         if ($has_children) {
             if (0 === $c->getDepth()) {
                 if (!$this->use_folder) {
-                    $out .= '<span class="kint-folder-trigger" title="Move to folder">&mapstodown;</span>';
+                    $out .= '<span class="kint-folder-trigger" title="Move to folder"></span>';
                 }
-                $out .= '<span class="kint-search-trigger" title="Show search box">&telrec;</span>';
+                $out .= '<span class="kint-search-trigger" title="Show search box"></span>';
                 $out .= '<input type="text" class="kint-search" value="">';
             }
 
@@ -290,7 +290,7 @@ class RichRenderer extends AbstractRenderer
         }
 
         if (null !== ($s = $v->getDisplayValue())) {
-            $s = \preg_replace('/\\s+/', ' ', $s);
+            $s = (string) \preg_replace('/\\s+/', ' ', $s);
 
             if (self::$strlen_max) {
                 $s = Utils::truncateString($s, self::$strlen_max);
@@ -322,7 +322,7 @@ class RichRenderer extends AbstractRenderer
         $output = '<dd>';
 
         if (1 === \count($tabs) && $tabs[0]->labelIsImplicit()) {
-            $output .= \reset($contents);
+            $output .= (string) \reset($contents);
         } else {
             $output .= '<ul class="kint-tabs">';
 
@@ -412,7 +412,13 @@ class RichRenderer extends AbstractRenderer
             return '</div>';
         }
 
-        $output = '<footer>';
+        $output = '<footer';
+
+        if ($this->expand) {
+            $output .= ' class="kint-show"';
+        }
+
+        $output .= '>';
 
         if (!$this->use_folder) {
             $output .= '<span class="kint-folder-trigger" title="Move to folder">&mapstodown;</span>';

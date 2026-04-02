@@ -32,7 +32,7 @@ class Administrator
     {
         $this->CI = &get_instance();
         $this->theme_path = "application/themes/admin/";
-        $this->menu = array();
+        $this->menu = [];
         $this->title = '';
         $this->currentPage = '';
 
@@ -228,12 +228,12 @@ class Administrator
     public function view(string $content, bool|string $css = false, bool|string $js = false)
     {
         if ($this->CI->input->is_ajax_request() && isset($_GET['is_json_ajax']) && $_GET['is_json_ajax'] == 1) {
-            $array = array(
+            $array = [
                 "title" => ($this->title) ? $this->title : "",
                 "content" => $content,
                 "js" => $js,
                 "css" => $css
-            );
+            ];
 
             return json_encode($array);
         }
@@ -254,10 +254,9 @@ class Administrator
 
 
         $notifications = $this->CI->cms_model->getNotifications($this->CI->user->getId(), true);
-        //var_dump($notifications);
 
         // Gather the theme data
-        $data = array(
+        $data = [
             "page" => '<div id="content_ajax">' . $content . '</div>',
             "url" => $this->CI->template->page_url,
             "menu" => $menu,
@@ -267,6 +266,7 @@ class Administrator
             "nickname" => $this->CI->user->getNickname(),
             "current_page" => $this->currentPage,
             "defaultLanguage" => $this->CI->config->item('language'),
+            "client_language" => $this->CI->language->getClientData(),
             "languages" => $this->CI->language->getAllLanguages(),
             "abbreviationLanguage" => $this->CI->language->getAbbreviationByLanguage($this->CI->language->getLanguage()),
             "serverName" => $this->CI->config->item('server_name'),
@@ -274,10 +274,10 @@ class Administrator
             "groups" => $this->CI->acl_model->getGroupsByUser(),
             "notifications" => $notifications,
             "cdn_link" => $this->CI->config->item('cdn') === true ? $this->CI->config->item('cdn_link') : null
-        );
+        ];
 
         // Load the main template
-        $output = $this->CI->smarty->view($this->theme_path . "template.tpl", $data, true);
+        $output = $this->CI->smarty->view($this->theme_path . 'template.tpl', $data, true);
 
         return $this->CI->output->set_output($output);
     }
@@ -294,12 +294,12 @@ class Administrator
      */
     public function box(string $title, string $body, bool $full = false, bool|string $css = false, bool|string $js = false)
     {
-        $data = array(
-            "headline" => $title,
-            "content" => $body
-        );
+        $data = [
+            'headline' => $title,
+            'content' => $body
+        ];
 
-        $page = $this->CI->smarty->view($this->theme_path . "box.tpl", $data, true);
+        $page = $this->CI->smarty->view($this->theme_path . 'box.tpl', $data, true);
 
         if ($full) {
             $this->view($page, $css, $js);
@@ -331,7 +331,7 @@ class Administrator
 
     public function getEnabledModules(): array
     {
-        $enabled = array();
+        $enabled = [];
 
         foreach ($this->getModules() as $name => $manifest) {
             if ($manifest['enabled']) {
@@ -344,7 +344,7 @@ class Administrator
 
     public function getDisabledModules(): array
     {
-        $disabled = array();
+        $disabled = [];
 
         foreach ($this->getModules() as $name => $manifest) {
             if (!array_key_exists("enabled", $manifest) || !$manifest['enabled']) {
@@ -365,13 +365,13 @@ class Administrator
                 $this->logIn();
             } else {
                 if (!$this->CI->input->is_ajax_request() && !isset($_GET['is_json_ajax'])) {
-                    $data = array(
+                    $data = [
                         "url" => $this->CI->template->page_url,
                         "isOnline" => $this->CI->user->isOnline(),
                         "username" => $this->CI->user->getUsername(),
                         "avatar"    => $this->CI->user->getAvatar($this->CI->user->getId()),
                         "cdn_link" => $this->CI->config->item('cdn') === true ? $this->CI->config->item('cdn_link') : null
-                    );
+                    ];
 
                     $output = $this->CI->smarty->view($this->theme_path . "login.tpl", $data, true);
 

@@ -29,7 +29,6 @@ CREATE TABLE `acl_account_groups`  (
   `account_id` int(10) UNSIGNED NOT NULL,
   `group_id` int(10) UNSIGNED NOT NULL,
   PRIMARY KEY (`account_id`, `group_id`) USING BTREE,
-  UNIQUE INDEX `account_id_group_id`(`account_id`, `group_id`) USING BTREE,
   INDEX `FK__acl_groups`(`group_id`) USING BTREE,
   CONSTRAINT `FK__acl_groups` FOREIGN KEY (`group_id`) REFERENCES `acl_groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=Dynamic;
@@ -47,8 +46,7 @@ CREATE TABLE `acl_account_permissions`  (
   `permission_name` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `module` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `value` tinyint(1) UNSIGNED NOT NULL DEFAULT 0,
-  PRIMARY KEY (`account_id`) USING BTREE,
-  UNIQUE INDEX `account_id_permission_id`(`account_id`, `permission_name`, `module`) USING BTREE
+  PRIMARY KEY (`account_id`, `permission_name`, `module`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=Dynamic;
 
 -- ----------------------------
@@ -63,8 +61,7 @@ CREATE TABLE `acl_account_roles`  (
   `account_id` int(11) UNSIGNED NOT NULL,
   `role_name` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `module` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  PRIMARY KEY (`account_id`, `role_name`) USING BTREE,
-  UNIQUE INDEX `account_id_role_name`(`account_id`, `role_name`) USING BTREE
+  PRIMARY KEY (`account_id`, `role_name`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=Dynamic;
 
 -- ----------------------------
@@ -80,7 +77,6 @@ CREATE TABLE `acl_group_roles`  (
   `role_name` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `module` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`group_id`, `role_name`, `module`) USING BTREE,
-  UNIQUE INDEX `group_id_role_id`(`group_id`, `role_name`, `module`) USING BTREE,
   CONSTRAINT `FK__groups` FOREIGN KEY (`group_id`) REFERENCES `acl_groups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=Dynamic;
 
@@ -699,10 +695,10 @@ CREATE TABLE `menu`  (
 -- Records of menu
 -- ----------------------------
 INSERT INTO `menu` (`id`, `name`, `link`, `type`, `rank`, `specific_rank`, `order`, `permission`, `side`, `dropdown`, `parent_id`) VALUES
-(1, '{"english":"Home","spanish":"Inicio","simplified-chinese":"首页","portuguese-brazilian":"Início","france":"Accueil","persian":"خانه"}', 'news', 'top', 1, 0, 1, NULL, 'L', 0, 0),
+(1, '{"english":"Home","spanish":"Inicio","simplified-chinese":"首页","portuguese-brazilian":"Início","france":"Accueil","persian":"خانه"}', '', 'top', 1, 0, 1, NULL, 'L', 0, 0),
 (3, '{"english":"Features","france":"Fonctionnalités","spanish":"Características","persian":"ویژگی‌ها","portuguese-brazilian":"Funcionalidades","simplified-chinese":"功能"}', '#', 'top', 1, 0, 4, NULL, 'L', 1, 0),
 (4, '{"english":"Forum","france":"Forum","persian":"فروم","portuguese-brazilian":"Fórum","simplified-chinese":"论坛 ","spanish":"Foro"}', 'forum', 'top', 1, 0, 3, NULL, 'L', 0, 0),
-(7, '{"english":"Home","france":"Accueil","persian":"خانه ","portuguese-brazilian":"Início","simplified-chinese":"首页 ","spanish":"Inicio"}', 'news', 'side', 1, 0, 8, NULL, 'L', 0, 0),
+(7, '{"english":"Home","france":"Accueil","persian":"خانه ","portuguese-brazilian":"Início","simplified-chinese":"首页 ","spanish":"Inicio"}', '', 'side', 1, 0, 8, NULL, 'L', 0, 0),
 (8, '{"english":"Private messages","france":"Messages privés","persian":"پیام‌های خصوصی","portuguese-brazilian":"Mensagens privadas","simplified-chinese":"私信 ","spanish":"Mensajes privados"}', 'messages', 'side', 2, 0, 11, '', 'L', 0, 0),
 (9, '{"english":"How to connect","france":"Comment se connecter","persian":"نحوه اتصال","portuguese-brazilian":"Como conectar","simplified-chinese":"如何连接","spanish":"Cómo conectarse"}', 'page/connect', 'top', 1, 0, 1, NULL, 'L', 0, 12),
 (10, '{"english":"Forum","france":"Forum","persian":"فروم","portuguese-brazilian":"Fórum","simplified-chinese":"论坛 ","spanish":"Foro"}', 'forum', 'side', 1, 0, 11, NULL, 'L', 0, 0),
@@ -717,7 +713,7 @@ INSERT INTO `menu` (`id`, `name`, `link`, `type`, `rank`, `specific_rank`, `orde
 (19, '{"english":"Online players","france":"Joueurs en ligne","persian":"بازیکنان آنلاین","portuguese-brazilian":"Jogadores online","simplified-chinese":"在线玩家","spanish":"Jugadores en línea"}', 'online', 'side', 1, 0, 14, NULL, 'L', 0, 0),
 (20, '{"english":"Changelog","france":"Journal des modifications","persian":"تاریخچه تغییرات","portuguese-brazilian":"Registro de alterações","simplified-chinese":"更新日志","spanish":"Registro de cambios"}', 'changelog', 'side', 1, 0, 21, NULL, NULL, 0, 0),
 (21, '{"english":"Admin panel","france":"Panneau d\'administration","persian":"پنل مدیریت","portuguese-brazilian":"Painel de administração","simplified-chinese":"管理面板","spanish":"Panel de administración"}', 'admin', 'side', 5, 0, 18, '21', 'L', 0, 0),
-(22, '{"english":"Home","france":"Accueil","persian":"خانه","portuguese-brazilian":"Início","simplified-chinese":"首页 ","spanish":"Inicio"}', 'news', 'bottom', 1, 0, 10, NULL, 'L', 0, 0),
+(22, '{"english":"Home","france":"Accueil","persian":"خانه","portuguese-brazilian":"Início","simplified-chinese":"首页 ","spanish":"Inicio"}', '', 'bottom', 1, 0, 10, NULL, 'L', 0, 0),
 (23, '{"english":"Forum","france":"Forum","persian":"فروم","portuguese-brazilian":"Fórum","simplified-chinese":"论坛 ","spanish":"Foro"}', 'forum', 'bottom', 1, 0, 11, NULL, 'L', 0, 0),
 (24, '{"english":"Store","france":"Boutique","persian":"فروشگاه","portuguese-brazilian":"Loja","simplified-chinese":"商店","spanish":"Tienda"}', 'store', 'bottom', 1, 0, 13, NULL, 'L', 0, 0),
 (25, '{"english":"How to connect","france":"Comment se connecter","persian":"چگونه متصل شویم","portuguese-brazilian":"Como se conectar","simplified-chinese":"如何连接","spanish":"Cómo conectarse"}', 'page/connect', 'bottom', 1, 0, 12, NULL, 'L', 0, 0),
@@ -725,6 +721,37 @@ INSERT INTO `menu` (`id`, `name`, `link`, `type`, `rank`, `specific_rank`, `orde
 (27, '{"english":"Donate","france":"Faire un don","persian":"اهدا کردن","portuguese-brazilian":"Doar","simplified-chinese":"捐赠","spanish":"Donar"}', 'donate', 'bottom', 1, 0, 15, NULL, 'L', 0, 0),
 (100, '{"english":"Log out","france":"Se déconnecter","persian":"خروج از حساب","portuguese-brazilian":"Sair","simplified-chinese":"登出","spanish":"Cerrar sesión"}', 'logout', 'side', 2, 0, 100, '100', 'L', 0, 0);
 
+
+-- ----------------------------
+-- Table structure for menu_ucp
+-- ----------------------------
+DROP TABLE IF EXISTS `menu_ucp`;
+CREATE TABLE IF NOT EXISTS `menu_ucp` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` text,
+  `description` TEXT NULL DEFAULT NULL,
+  `link` varchar(255) DEFAULT '#',
+  `icon` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL,
+  `order` int(11) NOT NULL DEFAULT 0,
+  `group` int(11) NOT NULL DEFAULT 0,
+  `permission` varchar(100) DEFAULT NULL,
+  `permissionModule` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of menu_ucp
+-- ----------------------------
+INSERT INTO `menu_ucp` (`id`, `name`, `description`, `link`, `icon`, `order`, `group`, `permission`, `permissionModule`) VALUES
+(1, '{"english":"Account Overview"}', 'View and manage your game account details, characters, and activity history', 'ucp', 'fa-solid fa-user', 1, 1, 'view', 'ucp'),
+(2, '{"english":"Account settings"}', 'Manage your account preferences', 'ucp/settings', 'fa-solid fa-tools', 2, 1, 'canUpdateAccountSettings', 'ucp'),
+(3, '{"english":"Account Security"}', 'Manage your account security', 'ucp/security', 'fa-solid fa-user-shield', 3, 1, 'securityAccount', 'ucp'),
+(4, '{"english":"Teleport hub"}', 'Instantly travel to any location', 'teleport', 'fa-solid fa-location', 4, 2, 'view', 'teleport'),
+(5, '{"english":"Vote panel"}', 'Help the server rise in rankings through the Vote panel and receive VP', 'vote', 'fa-solid fa-gavel', 5, 2, 'view', 'vote'),
+(6, '{"english":"Donate panel"}', 'Support the server\'s growth through the Donate panel and receive DP', 'donate', 'fa-solid fa-coin', 6, 2, 'view', 'donate'),
+(7, '{"english":"Store"}', 'Purchase items, mounts, and upgrades', 'store', 'fa-solid fa-shopping-cart', 7, 2, 'view', 'store'),
+(8, '{"english":"GM panel"}', 'Access tools and controls to manage players and ...', 'gm', 'fa-solid fa-users', 8, 3, 'view', 'gm'),
+(9, '{"english":"Admin panel"}', 'Manage settings, accounts, and server operations', 'admin', 'fa-solid fa-user-crown', 9, 3, 'view', 'admin');
 
 -- ----------------------------
 -- Table structure for gm_log
@@ -1156,6 +1183,7 @@ DROP TABLE IF EXISTS `store_groups`;
 CREATE TABLE `store_groups`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL,
+  `icon` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL,
   `orderNumber` int(8) NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=Compact;
@@ -1230,6 +1258,8 @@ CREATE TABLE `teleport_locations`  (
   `goldCost` int(11) NULL DEFAULT 0,
   `realm` int(11) NULL DEFAULT 1,
   `required_faction` int(1) NOT NULL DEFAULT 0,
+  `required_level` int(1) NOT NULL DEFAULT 1,
+  `map_id` int(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `realm_fk`(`realm`) USING BTREE,
   CONSTRAINT `realm_fk` FOREIGN KEY (`realm`) REFERENCES `realms` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -1238,6 +1268,45 @@ CREATE TABLE `teleport_locations`  (
 -- ----------------------------
 -- Records of teleport_locations
 -- ----------------------------
+INSERT INTO `teleport_locations` (`id`, `name`, `description`, `x`, `y`, `z`, `orientation`, `mapId`, `vpCost`, `dpCost`, `goldCost`, `realm`, `required_faction`, `required_level`, `map_id`) VALUES
+	(1, 'Orgrimmar', 'Capital City', 1629.36, -4373.39, 31.2564, 3.54839, 1, 0, 0, 350, 1, 2, 1, 1),
+	(2, 'Thunder Bluff', 'Capital City', -1277.37, 124.804, 131.287, 5.22274, 1, 0, 0, 350, 1, 2, 1, 1),
+	(4, 'Darnassus', 'Capital City', 9949.56, 2284.21, 1341.4, 1.59587, 1, 0, 0, 350, 1, 1, 1, 1),
+	(5, 'Ragefire Chasm', 'Dungeon', 1811.78, -4410.5, -18.4704, 5.20165, 1, 0, 0, 250, 1, 2, 15, 1),
+	(6, 'Wailing Caverns', 'Dungeon', -731.607, -2218.39, 17.0281, 2.78486, 1, 0, 0, 350, 1, 0, 17, 1),
+	(7, 'The Barrens', 'Zone', 884.54, -3548.45, 91.8532, 2.95957, 1, 0, 0, 250, 1, 2, 10, 1),
+	(8, 'Stormwind', 'Capital City', -8833.38, 628.628, 94.0066, 1.06535, 0, 0, 0, 350, 1, 1, 1, 2),
+	(9, 'Ironforge', 'Capital City', -4918.88, -940.406, 501.564, 5.42347, 0, 0, 0, 350, 1, 1, 1, 2),
+	(10, 'Undercity', 'Capital City', 1584.07, 241.987, -52.1534, 0.049647, 0, 0, 0, 350, 1, 2, 1, 2),
+	(11, 'Blackrock Mountain', 'Dungeon', -7494.94, -1123.49, 265.547, 3.3092, 0, 0, 0, 250, 1, 0, 50, 2),
+	(12, 'Karazhan', 'Raid', -11118.9, -2010.33, 47.0819, 0.649895, 0, 0, 0, 350, 1, 0, 70, 2),
+	(13, 'Elwynn Forest', 'Zone', -9617.06, -288.949, 57.3053, 4.72687, 0, 0, 0, 250, 1, 1, 1, 2),
+	(14, 'Shattrath City', 'Capital City', -1838.16, 5301.79, -12.428, 5.9517, 530, 0, 0, 350, 1, 0, 60, 3),
+	(15, 'Hellfire Peninsula', 'Zone', -211.237, 4278.54, 86.5678, 4.59776, 530, 0, 0, 350, 1, 0, 58, 3),
+	(16, 'Black Temple', 'Raid', -3649.92, 317.469, 35.2827, 2.94285, 530, 0, 0, 350, 1, 0, 70, 3),
+	(17, 'Dalaran', 'Capital City', 5804.15, 624.771, 647.767, 1.64, 571, 0, 0, 450, 1, 0, 70, 4),
+	(18, 'Icecrown', 'Zone', 7253.64, 1644.78, 433.68, 4.83412, 571, 0, 0, 450, 1, 0, 77, 4),
+	(19, 'Ulduar', 'Raid', 9049.37, -1282.35, 1060.19, 5.8395, 571, 0, 0, 450, 1, 0, 80, 4),
+	(20, 'Icecrown Citadel', 'Raid', 5873.82, 2110.98, 636.011, 3.5523, 571, 0, 0, 550, 1, 0, 80, 4);
+
+-- ----------------------------
+-- Table structure for teleport_maps
+-- ----------------------------
+DROP TABLE IF EXISTS `teleport_maps`;
+CREATE TABLE `teleport_maps` (
+	`id` INT NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(50) NULL DEFAULT NULL COLLATE utf8_unicode_ci,
+	PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=5 COLLATE=utf8_unicode_ci;
+
+-- ----------------------------
+-- Records of teleport_maps
+-- ----------------------------
+INSERT INTO `teleport_maps` (`id`, `name`) VALUES (1, 'Kalimdor');
+INSERT INTO `teleport_maps` (`id`, `name`) VALUES (2, 'Eastern Kingdoms');
+INSERT INTO `teleport_maps` (`id`, `name`) VALUES (3, 'Outland');
+INSERT INTO `teleport_maps` (`id`, `name`) VALUES (4, 'Northrend');
+
 
 -- ----------------------------
 -- Table structure for visitor_log
@@ -1245,8 +1314,8 @@ CREATE TABLE `teleport_locations`  (
 DROP TABLE IF EXISTS `visitor_log`;
 CREATE TABLE `visitor_log`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `date` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL,
-  `timestamp` varchar(100) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL,
+  `date` DATE NULL DEFAULT NULL,
+  `timestamp` int(10) NULL DEFAULT NULL,
   `ip` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `unique_date_ip` (`date`, `ip`) USING BTREE

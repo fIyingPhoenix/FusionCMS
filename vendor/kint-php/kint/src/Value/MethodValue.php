@@ -88,17 +88,22 @@ class MethodValue extends AbstractValue
         return $this->definition_rep;
     }
 
+    public function getFullyQualifiedDisplayName(): string
+    {
+        $c = $this->getContext();
+
+        return $c->owner_class.'::'.$c->getName().'('.$this->callable_bag->getParams().')';
+    }
+
     public function getDisplayName(): string
     {
         $c = $this->getContext();
 
-        $name = $c->getName();
-
         if ($c->static || (ClassDeclaredContext::ACCESS_PRIVATE === $c->access && $c->inherited)) {
-            $name = $c->owner_class.'::'.$name;
+            return $this->getFullyQualifiedDisplayName();
         }
 
-        return $name.'('.$this->callable_bag->getParams().')';
+        return $c->getName().'('.$this->callable_bag->getParams().')';
     }
 
     public function getDisplayValue(): ?string
@@ -122,7 +127,7 @@ class MethodValue extends AbstractValue
         $funcname = \str_replace('_', '-', \strtolower($c->getName()));
 
         if (0 === \strpos($funcname, '--') && 0 !== \strpos($funcname, '-', 2)) {
-            $funcname = \substr($funcname, 2);
+            $funcname = (string) \substr($funcname, 2);
         }
 
         return 'https://www.php.net/'.$class.'.'.$funcname;

@@ -209,7 +209,7 @@ class Gm_model extends CI_Model
         if ($query->getNumRows() > 0) {
             return $query->getResultArray();
         } else {
-            return false;
+            return [];
         }
     }
 
@@ -231,7 +231,7 @@ class Gm_model extends CI_Model
             }
         }
 
-        return false;
+        return [];
     }
 
     public function setBanIP($realmConnection, $ip, $bannedBy, $banReason, $banDay)

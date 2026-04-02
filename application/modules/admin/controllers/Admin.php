@@ -27,10 +27,20 @@ class Admin extends MX_Controller
 
         $this->administrator->setTitle("Dashboard");
 
-        // Load realm objects
-        $realms = $this->realms->getRealms();
+        $server_software = 'Unknown';
+        if (array_key_exists( 'SERVER_SOFTWARE',  $_SERVER)) {
+            $server_software = $_SERVER['SERVER_SOFTWARE'];
 
-        $uptimes = $this->flush_uptime($realms);
+            if (stripos($server_software, 'Apache') !== false && stripos($server_software, 'Win') !== false) {
+
+                if (preg_match('/^Apache\/[\d\.]+(?:\s*\(Win\d+\))?/', $server_software, $matches)) {
+                    $server_software = $matches[0];
+                }
+            }
+        }
+
+        $graphMonthly = $this->getGraphData(false, [0, 1]);
+        $graphDaily   = $this->getGraphData(true, [0, 1, 2]);
 
         $data = [
             'url' => $this->template->page_url,
@@ -38,9 +48,10 @@ class Admin extends MX_Controller
             'version' => $this->administrator->getVersion(),
             'php_version' => phpversion(),
             'ci_version' => CI_VERSION,
+            'smarty_version'  => $this->smarty::SMARTY_VERSION,
             'os' => $this->getOsName(),
             'php_sapi' => PHP_SAPI,
-            'server_software' => $_SERVER['SERVER_SOFTWARE'],
+            'server_software' => $server_software,
             'theme_value' => $this->config->item('theme'),
             'unique' => $this->getUnique(),
             'views' => $this->getViews(),
@@ -53,11 +64,9 @@ class Admin extends MX_Controller
             'location' => $this->internal_user_model->getLocation(),
             'register_date' => $this->user->getRegisterDate(),
             'signups' => $this->getSignups(),
-            'graphMonthly' => [$this->graphMonthly(), $this->graphMonthly(1)],
-            'graphDaily' => [$this->graphDaily(), $this->graphDaily(1), $this->graphDaily(2)],
+            'graphMonthly' => is_array($graphMonthly) ? [$graphMonthly[0], $graphMonthly[1]] : [],
+            'graphDaily' => is_array($graphDaily) ? [$graphDaily[0], $graphDaily[1], $graphDaily[2]] : [],
             'realm_status' => $this->config->item('disable_realm_status'),
-            'realms' => $realms,
-            'uptimes' => $uptimes,
             'latestVersion' => $this->getLatestVersion(),
             'isOldTheme' => empty($this->template->theme_data['min_required_version']),
         ];
@@ -127,144 +136,93 @@ class Admin extends MX_Controller
         return $data;
     }
 
-    private function graphMonthly($ago = 0)
+    private function getGraphData(bool $daily, array $agoList)
     {
         if ($this->config->item('disable_visitor_graph'))
-        {
             return false;
-        }
 
-        if ($ago == 0)
-            $cache = $this->cache->get("dashboard_monthly");
-        else
-            $cache = $this->cache->get('dashboard_monthly_'.$ago.'_year_ago');
+        $type = $daily ? 'daily' : 'monthly';
+        $results = [];
 
-        if ($cache !== false)
-        {
-            $data = $cache;
-        } else {
-            $rows = $this->dashboard_model->getGraph(false, $ago);
-            $fullGraph = [];
-
-            if($rows)
-            {
-                foreach ($rows as $row)
-                {
-                    $expld = explode("-", $row["date"]);
-
-                    $year = $expld[0];
-                    $month = $expld[1];
-
-                    $date = new DateTime();
-                    $fullYear = [];
-                    for ($i = 1; $i <= 12; $i++)
-                    {
-                        if ($date->format("Y") == $year && $i > $date->format("m"))
-                        {
-                            continue;
-                        }
-
-                        if ($date->format("Y") != $year && $i < $date->format("m"))
-                        {
-                            continue;
-                        }
-
-                        $fullYear[($i < 10 ? "0" : "") . $i] = 0;
-                    }
-
-                    if (!isset($fullGraph[$year]["month"]))
-                    {
-                        $fullGraph[$year]["month"] = $fullYear;
-                    }
-
-                    if (isset($fullGraph[$year]["month"][$month]))
-                    {
-                        $fullGraph[$year]["month"][$month] = $fullGraph[$year]["month"][$month] + $row["ipCount"];
-                    }
-                }
-            }
-
-            $data = $fullGraph;
-
-            if ($ago == 0)
-                $this->cache->save('dashboard_monthly', $data, 60 * 60 * 24 * 15); // Every two weeks
-            else
-                $this->cache->save('dashboard_monthly_'.$ago.'_year_ago', $data, 60 * 60 * 24 * 9 * 30); // every 9 months
-        }
-
-        return $data;
-    }
-    
-    private function graphDaily($ago = 0)
-    {
-        if ($this->config->item('disable_visitor_graph'))
-        {
-            return false;
-        }
-
-        if ($ago == 0)
-            $cache = $this->cache->get("dashboard_daily");
-        else
-            $cache = $this->cache->get('dashboard_daily_'.$ago.'_month_ago');
-    
-        if ($cache !== false)
-        {
-            $data = $cache;
-        } else {
-            $rows = $this->dashboard_model->getGraph(true, $ago);
-    
-            $fullMonth = [];
-
-            if ($rows) {
-                foreach ($rows as $row)
-                {
-                    $expld = explode("-", $row["date"]);
-
-                    $year = $expld[0];
-                    $day = $expld[2];
-
-                    $fullDays = [];
-                    for ($i = 1; $i <= 31; $i++)
-                    {
-                        $fullDays[($i < 10 ? "0" : "") . $i] = 0;
-                    }
-
-                    if (!isset($fullMonth[$year]["day"]))
-                    {
-                        $fullMonth[$year]["day"] = $fullDays;
-                    }
-
-                    if (isset($fullMonth[$year]["day"][$day]))
-                    {
-                        $fullMonth[$year]["day"][$day] += $row["ipCount"];
-                    }
-                }
+        $agoDataList = [];
+        foreach ($agoList as $ago) {
+            $cacheKey = $this->getGraphCacheKey($type, $ago);
+            $cached = $this->cache->get($cacheKey);
+            if ($cached !== false) {
+                $results[$ago] = $cached;
             } else {
-                $fullDays = [];
-                for ($i = 1; $i <= 31; $i++)
-                {
-                    $fullDays[($i < 10 ? "0" : "") . $i] = 0;
-                }
-                $year = date('Y');
-                $fullMonth[$year]["day"] = $fullDays;
+                $agoDataList[] = $ago;
             }
-
-            $currentYear = $ago > 0 && date('m') == '01' ? (date('Y') - 1) : date('Y');
-
-            $data = $fullMonth[$currentYear]["day"] ?? null;
-
-            if (!isset($data))
-            {
-                $data = [];
-            }
-
-            if ($ago == 0)
-                $this->cache->save('dashboard_daily', $data, 60 * 60 * 24);
-            else
-                $this->cache->save('dashboard_daily_'.$ago.'_month_ago', $data, 60 * 60 * 24);
         }
 
-        return $data;
+        if (empty($agoDataList)) {
+            return $results;
+        }
+
+        $rows = $this->dashboard_model->getGraph($daily, $agoDataList);
+
+        foreach ($agoDataList as $ago) {
+
+            $range = [];
+            $max = $daily ? 31 : 12;
+
+            for ($i = 1; $i <= $max; $i++) {
+                $range[sprintf('%02d', $i)] = 0;
+            }
+
+            $results[$ago] = $range;
+        }
+
+        foreach ($rows as $row) {
+            [$year, $month, $day] = explode('-', $row['date']);
+            $ago = (int) $row['ago'];
+            $key = $daily ? $day : $month;
+            $key = (int) $key < 10 ? '0' . (int) $key : (string)(int) $key;
+
+            if (!isset($results[$ago][$key])) {
+                $results[$ago][$key] = 0;
+            }
+
+            $results[$ago][$key] += $row['ipCount'];
+        }
+
+        if (!$daily) {
+            foreach ($results as $ago => $months) {
+                $year = date('Y') - $ago;
+                $results[$ago] = [
+                    (string) $year => [
+                        'month' => $months
+                    ]
+                ];
+            }
+        }
+
+        foreach ($agoDataList as $ago) {
+            $cacheKey = $this->getGraphCacheKey($type, $ago);
+            $ttl = $this->getGraphCacheTTL($type, $ago);
+            $this->cache->save($cacheKey, $results[$ago], $ttl);
+        }
+
+        return $results;
+    }
+
+    private function getGraphCacheKey(string $type, int $ago): string
+    {
+        if ($ago === 0) {
+            return "dashboard_{$type}";
+        }
+        $suffix = $type === 'daily' ? 'month' : 'year';
+        return "dashboard_{$type}_{$ago}_{$suffix}_ago";
+    }
+
+    private function getGraphCacheTTL(string $type, int $ago): int
+    {
+        if ($type === 'monthly') {
+            //                   Every two weeks  -  Every 9 months
+            return $ago === 0 ? 60 * 60 * 24 * 15 : 60 * 60 * 24 * 30 * 9;
+        } else {
+            return 60 * 60 * 24; // 24h
+        }
     }
 
     public function checkSoap()
@@ -284,16 +242,24 @@ class Admin extends MX_Controller
             }
         }
     }
-	
+
 	public function realmstatus()
     {
-        $data = array(
-			"realmstatus" => $this->realms->getRealms(),
-        );
+        $realms = $this->realms->getRealms();
+        $uptimes = $this->flush_uptime($realms);
 
-		$out = $this->template->loadPage("ajax_files/realmstatus.tpl", $data);
-
-        die($out);
+        echo json_encode([
+            'realms' => array_map(function($realm) use ($uptimes) {
+                return [
+                    'id' => $realm->getId(),
+                    'name' => $realm->getName(),
+                    'is_online' => $realm->isOnline(),
+                    'percentage' => $realm->getPercentage(),
+                    'online_players' => $realm->getOnline(),
+                    'uptime' => $realm->isOnline() ? ($uptimes[$realm->getId()] ?? 0) : 0,
+                ];
+            }, $realms)
+        ]);
     }
 
     public function destroySession()

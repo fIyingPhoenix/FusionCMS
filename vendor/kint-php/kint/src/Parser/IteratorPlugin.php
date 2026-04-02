@@ -54,7 +54,7 @@ class IteratorPlugin extends AbstractPlugin implements PluginCompleteInterface
      * when traversed. Others are just huge. Either way, put them in here
      * and you won't have to worry about them being parsed.
      *
-     * @psalm-var class-string<Traversable>[]
+     * @psalm-var class-string[]
      */
     public static array $blacklist = [
         NamedNodeMap::class,
@@ -86,10 +86,6 @@ class IteratorPlugin extends AbstractPlugin implements PluginCompleteInterface
         $c = $v->getContext();
 
         foreach (self::$blacklist as $class) {
-            /**
-             * @psalm-suppress RedundantCondition
-             * Psalm bug #11076
-             */
             if ($var instanceof $class) {
                 $base = new BaseContext($class.' Iterator Contents');
                 $base->depth = $c->getDepth() + 1;

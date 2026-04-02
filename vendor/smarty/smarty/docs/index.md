@@ -8,6 +8,25 @@ It allows you to write **templates**, using **variables**, **modifiers**, **func
 <p>
     The number of pixels is: {math equation="x * y" x=$height y=$width}.
 </p>
+
+<p>
+    {if $email matches "/^[^@]+@[^@]+\.[^@]+$/"}
+        Valid email address
+    {else}
+        Please enter a valid email
+    {/if}
+</p>
+```
+```html
+<h1>Hello world</h1>
+
+<p>
+    The number of pixels is: 307200.
+</p>
+
+<p>
+    Valid email address
+</p>
 ```
 
 When this template is rendered, with the value "Hello world" for the variable $title, 640 for $width, 
@@ -33,3 +52,13 @@ and 480 for $height, the result is:
 
 ## Source code
 - [Smarty repository at GitHub](https://github.com/smarty-php/smarty)
+
+## Sponsors
+
+### <img src="img/iwink-logo.svg" alt="iWink logo" width="100">
+
+[iWink](https://www.iwink.nl/), fullservice digital agency
+
+### <img src="img/temma-logo.svg" alt="Temma logo" width="100">
+
+[Temma](https://www.temma.net/), the MVC framework based on Smarty
